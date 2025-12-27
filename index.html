@@ -79,19 +79,47 @@ body {
   z-index: -1;
 }
 
+/* --- ENHANCED HEART SHOWER STYLES --- */
+.floating-heart {
+  position: absolute;
+  color: #ff1493; /* Deep Dark Pink */
+  pointer-events: none;
+  z-index: 1; 
+  user-select: none;
+  /* Ensuring they start below the screen */
+  bottom: -50px; 
+  animation: floatUp linear forwards;
+  opacity: 0.95; 
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes floatUp {
+  0% { 
+    transform: translateY(0) rotate(0deg) scale(0.5); 
+    opacity: 0; 
+  }
+  10% { opacity: 0.95; }
+  90% { opacity: 0.95; }
+  100% { 
+    transform: translateY(-115vh) rotate(360deg) scale(1.5); 
+    opacity: 0; 
+  }
+}
+
 #content-container {
     height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 60; 
 }
 
 #content-wrap {
     width: 85%;
     max-width: 500px;
     text-align: center;
-    z-index: 60;
     pointer-events: none;
 }
 
@@ -166,18 +194,39 @@ let finished = false;
 let currentIndex = 1;
 const totalCount = 5;
 
-// Initial Positioning
 ball.style.left = "calc(50% - 60px)";
 ball.style.top = "calc(50% - 60px)";
+
+// --- INTENSE HEART GENERATOR ---
+function createHeart() {
+  const heart = document.createElement("div");
+  heart.className = "floating-heart";
+  heart.innerHTML = "❤";
+  
+  // Spread horizontally
+  heart.style.left = Math.random() * 100 + "vw";
+  
+  // Variations in look
+  const size = Math.random() * 25 + 10;
+  heart.style.fontSize = size + "px";
+  
+  // Variations in speed (fast and slow mix)
+  const duration = Math.random() * 2 + 3; // 3s to 5s travel time
+  heart.style.animationDuration = duration + "s";
+  
+  celebration.appendChild(heart);
+  
+  setTimeout(() => {
+    heart.remove();
+  }, duration * 1000);
+}
 
 function moveBall() {
   if(finished) return;
   count++;
   
-  // Browsers require a user gesture to play audio. 
-  // We trigger the first song load on the first ball tap.
   if(count === 1) {
-    player.src = `mylv${currentIndex}.mp3`;
+    player.src = `mylv1.mp3`;
     player.load();
   }
 
@@ -187,7 +236,10 @@ function moveBall() {
     setTimeout(() => {
         ball.remove();
         celebration.classList.add("show");
-        player.play(); // Start music when the card shows
+        player.play();
+        
+        // --- HIGH INTENSITY (New heart every 120ms) ---
+        setInterval(createHeart, 120); 
     }, 800);
     return;
   }
@@ -199,19 +251,14 @@ function moveBall() {
 
 ball.addEventListener("click", moveBall);
 
-// Changing Background and Song on Click
 celebration.addEventListener("click", (e) => {
     currentIndex++;
     if(currentIndex > totalCount) currentIndex = 1;
     
-    // Update Image Source
-    const nextImgSrc = `mylove${currentIndex}.jpeg`;
-    
-    // Update Song Source
     player.src = `mylv${currentIndex}.mp3`;
     player.play();
 
-    // Smooth Transition Logic for Images
+    const nextImgSrc = `mylove${currentIndex}.jpeg`;
     if (parseFloat(bg1.style.opacity) === 1) {
         bg2.src = nextImgSrc;
         bg2.style.opacity = 1;
@@ -226,31 +273,26 @@ celebration.addEventListener("click", (e) => {
 });
 
 function createAestheticExplosion(x, y) {
-  const colors = ['#ffccd5', '#ffffff', '#ffb3c1'];
   const symbols = ['✧', '❤', '✦'];
-
-  for(let i = 0; i < 30; i++) {
+  for(let i = 0; i < 20; i++) {
     const p = document.createElement("div");
     p.className = "particle";
     p.innerHTML = symbols[Math.floor(Math.random() * symbols.length)];
     p.style.left = x + "px";
     p.style.top = y + "px";
-    p.style.color = colors[Math.floor(Math.random() * colors.length)];
+    p.style.color = "#ff1493"; 
     p.style.fontSize = "15px";
 
     const angle = Math.random() * Math.PI * 2;
-    const velocity = 100 + Math.random() * 150; 
+    const velocity = 80 + Math.random() * 100; 
 
     p.animate([
       { transform: "translate(0, 0) scale(0)", opacity: 1 },
       { transform: `translate(${Math.cos(angle) * velocity}px, ${Math.sin(angle) * velocity}px) rotate(360deg)`, opacity: 0 }
-    ], {
-      duration: 3000,
-      easing: "ease-out"
-    });
+    ], { duration: 2000, easing: "ease-out" });
 
     celebration.appendChild(p);
-    setTimeout(() => p.remove(), 3000);
+    setTimeout(() => p.remove(), 2000);
   }
 }
 </script>
