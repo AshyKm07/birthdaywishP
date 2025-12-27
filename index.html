@@ -130,7 +130,7 @@ body {
 
 <body>
 
-<audio id="bg-music" loop></audio>
+<audio id="player" loop></audio>
 
 <div id="ball"><span>don't touch</span></div>
 
@@ -150,7 +150,7 @@ body {
           <strong>Always & Forever. ❤️</strong>
       </div>
     </div>
-    <div id="hint">Tap anywhere to change photo & music</div>
+    <div id="hint">Tap anywhere to change photo and song</div>
   </div>
 </div>
 
@@ -159,13 +159,14 @@ const ball = document.getElementById("ball");
 const celebration = document.getElementById("celebration");
 const bg1 = document.getElementById("bg1");
 const bg2 = document.getElementById("bg2");
-const music = document.getElementById("bg-music");
+const player = document.getElementById("player");
 
 let count = 0;
 let finished = false;
 let currentIndex = 1;
-const totalItems = 5;
+const totalCount = 5;
 
+// Initial Positioning
 ball.style.left = "calc(50% - 60px)";
 ball.style.top = "calc(50% - 60px)";
 
@@ -173,11 +174,11 @@ function moveBall() {
   if(finished) return;
   count++;
   
-  // CRITICAL FIX: Load and play on first click to unlock audio
+  // Browsers require a user gesture to play audio. 
+  // We trigger the first song load on the first ball tap.
   if(count === 1) {
-    music.src = `mylv1.mp3`;
-    music.load(); 
-    music.play().catch(e => console.log("Waiting for more interaction..."));
+    player.src = `mylv${currentIndex}.mp3`;
+    player.load();
   }
 
   if(count === 6) {
@@ -186,7 +187,7 @@ function moveBall() {
     setTimeout(() => {
         ball.remove();
         celebration.classList.add("show");
-        music.play(); // Play here to ensure it's active
+        player.play(); // Start music when the card shows
     }, 800);
     return;
   }
@@ -198,17 +199,19 @@ function moveBall() {
 
 ball.addEventListener("click", moveBall);
 
+// Changing Background and Song on Click
 celebration.addEventListener("click", (e) => {
     currentIndex++;
-    if(currentIndex > totalItems) currentIndex = 1;
+    if(currentIndex > totalCount) currentIndex = 1;
     
-    // Smooth music change
-    music.pause();
-    music.src = `mylv${currentIndex}.mp3`;
-    music.load();
-    music.play();
-
+    // Update Image Source
     const nextImgSrc = `mylove${currentIndex}.jpeg`;
+    
+    // Update Song Source
+    player.src = `mylv${currentIndex}.mp3`;
+    player.play();
+
+    // Smooth Transition Logic for Images
     if (parseFloat(bg1.style.opacity) === 1) {
         bg2.src = nextImgSrc;
         bg2.style.opacity = 1;
@@ -218,25 +221,34 @@ celebration.addEventListener("click", (e) => {
         bg1.style.opacity = 1;
         bg2.style.opacity = 0;
     }
+    
     createAestheticExplosion(e.clientX, e.clientY);
 });
 
 function createAestheticExplosion(x, y) {
+  const colors = ['#ffccd5', '#ffffff', '#ffb3c1'];
   const symbols = ['✧', '❤', '✦'];
+
   for(let i = 0; i < 30; i++) {
     const p = document.createElement("div");
     p.className = "particle";
     p.innerHTML = symbols[Math.floor(Math.random() * symbols.length)];
     p.style.left = x + "px";
     p.style.top = y + "px";
-    p.style.color = "#ffccd5";
+    p.style.color = colors[Math.floor(Math.random() * colors.length)];
     p.style.fontSize = "15px";
+
     const angle = Math.random() * Math.PI * 2;
     const velocity = 100 + Math.random() * 150; 
+
     p.animate([
       { transform: "translate(0, 0) scale(0)", opacity: 1 },
       { transform: `translate(${Math.cos(angle) * velocity}px, ${Math.sin(angle) * velocity}px) rotate(360deg)`, opacity: 0 }
-    ], { duration: 3000, easing: "ease-out" });
+    ], {
+      duration: 3000,
+      easing: "ease-out"
+    });
+
     celebration.appendChild(p);
     setTimeout(() => p.remove(), 3000);
   }
